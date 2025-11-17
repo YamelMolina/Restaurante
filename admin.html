@@ -167,8 +167,8 @@ select {
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
-<script src="admin.js"></script>
+<script>
+const API = "https://restaurante-enpz.onrender.com/api/pedidos";
 
 function cargarPedidos() {
   fetch(API)
