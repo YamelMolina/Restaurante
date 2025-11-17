@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sabor Apasionante - Menú</title>
+
+<style>
+body {
+  margin: 0;
+  background: #0d0d0d;
+  font-family: Poppins, Arial;
+  color: #fff;
+  padding-bottom: 120px;
+}
+
+header {
+  background: #1a1a1a;
+  padding: 18px;
+  text-align: center;
+  color: #fede00;
+  font-size: 1.8rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  box-shadow: 0 0 25px #000;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  padding: 20px;
+}
+
+.item {
+  background: #111;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #333;
+  transition: transform .2s, box-shadow .2s;
+}
+
+.item:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 15px rgba(255,230,0,.2);
+}
+
+.item img {
+  width: 100%;
+  border-radius: 10px;
+  height: 120px;
+  object-fit: cover;
+}
+
+button {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  background: #fede00;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:hover { background: #fff000; }
+
+/* Carrito */
+#cart {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #1a1a1a;
+  padding: 15px;
+  border-top: 2px solid #fede00;
+  display: flex;
+  justify-content: space-between;
+  color: #fff;
+}
+
+/* Modal */
+#modal {
+  position: fixed;
+  top: 0; 
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,.8);
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-box {
+  background: #111;
+  padding: 20px;
+  width: 85%;
+  border-radius: 12px;
+  border: 1px solid #fede00;
+}
+</style>
+</head>
+
+<body>
+
+<header>🍔 Menú - Sabor Apasionante</header>
+
+<div class="grid" id="menu"></div>
+
+<!-- Carrito -->
+<div id="cart">
+  <span id="count">0 productos</span>
+  <button onclick="abrirModal()">Ver Pedido</button>
+</div>
+
+<!-- Modal -->
+<div id="modal">
+  <div class="modal-box">
+    <h2>Confirmar Pedido</h2>
+    <div id="detalle"></div>
+    <h3 id="total"></h3>
+
+    <input id="nombre" placeholder="Tu nombre" style="width:100%;padding:8px;margin-top:12px;border-radius:8px;border:none;background:#222;color:#fff;">
+    
+    <button onclick="enviarPedido()">Enviar Pedido</button>
+    <button onclick="cerrarModal()" style="background:#ff4444;margin-top:10px;">Cancelar</button>
+  </div>
+</div>
+
+<script>
+/* URL DEL BACKEND EN RENDER */
+const API = "https://restaurante-enpz.onrender.com/api/pedidos";
+
+/* IMÁGENES LOCALES (TAL COMO PEDISTE) */
+const menu = [
+  { nombre:'Hamburguesa Clásica', precio:15000, img:'hamburguesa.jpg' },
+  { nombre:'Perro Caliente', precio:12000, img:'perro.jpg' },
+  { nombre:'Pizza Personal', precio:18000, img:'pizza.jpg' },
+  { nombre:'Refresco', precio:5000, img:'refresco.jpg' },
+  { nombre:'Salchipapa', precio:16000, img:'salchipapa.jpg' },
+  { nombre:'Desgranado Mixto', precio:18000, img:'desgranado.jpg' },
+  { nombre:'Arepa con Queso', precio:7000, img:'arepa.jpg' },
+  { nombre:'Salchiqueso', precio:14000, img:'salchiqueso.jpg' },
+  { nombre:'Mazorcada', precio:17000, img:'mazorcada.jpg' },
+  { nombre:'Papas Francesas', precio:10000, img:'papas.jpg' },
+  { nombre:'Batido de Fresa', precio:9000, img:'batido.jpg' },
+  { nombre:'Jugo Natural', precio:6000, img:'jugo.jpg' }
+];
+
+let carrito = [];
+
+const cont = document.getElementById("menu");
+
+menu.forEach((p, i) => {
+  cont.innerHTML += `
+    <div class="item">
+      <img src="${p.img}">
+      <h3>${p.nombre}</h3>
+      <p>$${p.precio.toLocaleString()}</p>
+      <button onclick="agregar(${i})">Agregar</button>
+    </div>
+  `;
+});
+
+function agregar(i) {
+  carrito.push(menu[i]);
+  document.getElementById("count").textContent = carrito.length + " productos";
+}
+
+function abrirModal() {
+  if (carrito.length === 0) return alert("Tu carrito está vacío");
+
+  let html = "";
+  let total = 0;
+
+  carrito.forEach(p => {
+    html += `<div>- ${p.nombre} ($${p.precio.toLocaleString()})</div>`;
+    total += p.precio;
+  });
+
+  document.getElementById("detalle").innerHTML = html;
+  document.getElementById("total").textContent = "Total: $" + total.toLocaleString();
+
+  document.getElementById("modal").style.display = "flex";
+}
+
+function cerrarModal() {
+  document.getElementById("modal").style.display = "none";
+}
+
+function enviarPedido() {
+  const nombre = document.getElementById("nombre").value;
+  const params = new URLSearchParams(window.location.search);
+  const mesa = params.get("mesa") || "Sin mesa";
+
+  if (!nombre) return alert("Escribe tu nombre");
+
+  let total = carrito.reduce((a,b)=>a+b.precio,0);
+
+  const pedido = {
+    id: Date.now(),
+    nombre,
+    mesa,
+    productos: carrito,
+    total
+  };
+
+  fetch(API, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify(pedido)
+  })
+  .then(r => r.json())
+  .then(() => {
+    alert("Pedido enviado correctamente");
+    carrito = [];
+    cerrarModal();
+    document.getElementById("count").textContent = "0 productos";
+  })
+  .catch(() => alert("Error enviando pedido"));
+}
+</script>
+
+</body>
+</html>

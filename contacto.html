@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contacto - Sabor Apasionante</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-image: url('7nvD.gif');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
+      margin: 0;
+      padding: 0;
+      color: #fff;
+    }
+
+    header {
+      background-color: rgba(0, 0, 0, 0.6);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      color: #ff6f61;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin: 0 1rem;
+      font-weight: bold;
+      transition: color 0.3s;
+    }
+
+    nav a:hover {
+      color: #ff6f61;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 2rem auto;
+      background-color: rgba(0, 0, 0, 0.6);
+      padding: 2rem;
+      border-radius: 15px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    h2 {
+      text-align: center;
+      color: #ff6f61;
+      margin-bottom: 1.5rem;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    input, textarea {
+      padding: 0.75rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    button {
+      background-color: #ff6f61;
+      color: white;
+      border: none;
+      padding: 0.8rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+
+    button:hover {
+      background-color: #e65a50;
+      transform: scale(1.05);
+    }
+
+    .info {
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 1rem;
+    }
+
+    .info p {
+      margin: 0.5rem 0;
+    }
+
+    .info strong {
+      color: #ff6f61;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Sabor Apasionante</h1>
+    <nav>
+      <a href="home.html">Inicio</a>
+      <a href="menu.html">Menú</a>
+      <a href="inventario.html">Inventario</a>
+      <a href="ayuda.html">Ayuda</a>
+      <a href="contacto.html">Contacto</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <h2>Contáctanos 📞</h2>
+    <form id="form-contacto">
+      <input type="text" id="nombre" placeholder="Tu nombre" required>
+      <input type="email" id="correo" placeholder="Tu correo electrónico" required>
+      <textarea id="mensaje" rows="5" placeholder="Escribe tu mensaje..." required></textarea>
+      <button type="submit">Enviar mensaje</button>
+    </form>
+
+    <div class="info">
+      <h3>O visítanos en nuestro restaurante 🍽️</h3>
+      <p><strong>Dirección:</strong> Calle 12 #8-34, Riohacha - La Guajira</p>
+      <p><strong>Teléfono:</strong> +57 304 345 6543</p>
+      <p><strong>Correo:</strong> contacto@saborapasionante.com</p>
+      <p><strong>Instagram:</strong> <a href="https://instagram.com/SaborApasionante" target="_blank" style="color:white;">@SaborApasionante</a></p>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("form-contacto").addEventListener("submit", function(event) {
+      event.preventDefault();
+      alert("¡Gracias por tu mensaje! Nos pondremos en contacto pronto. 😊");
+      this.reset();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Inventario - Sabor Apasionante</title>
+<style>
+  body{font-family:Poppins,Arial;background:linear-gradient(#111,#222);color:#fff;margin:0}
+  header{background:rgba(0,0,0,.6);padding:1rem}
+  .wrap{max-width:1000px;margin:1rem auto;padding:1rem}
+  .grid{display:grid;grid-template-columns:1fr 320px;gap:1rem}
+  .card{background:#fff;color:#000;padding:1rem;border-radius:8px}
+  ul{list-style:none;padding:0}
+  li{padding:.5rem;border-bottom:1px solid #eee}
+  button{background:#ff6f61;border:none;padding:.5rem;border-radius:6px;color:#fff;cursor:pointer}
+</style>
+</head>
+<body>
+<header><div style="font-weight:800;color:#ff6f61">Inventario</div></header>
+<div class="wrap">
+  <div class="grid">
+    <div class="card">
+      <h3>Existencias</h3>
+      <ul id="lista-inv"></ul>
+    </div>
+    <aside class="card">
+      <h4>Ingredientes para reabastecer</h4>
+      <ul id="lista-reab"></ul>
+      <h4 style="margin-top:.8rem">Acciones</h4>
+      <div>
+        <button id="btn-reset">Restablecer inventario por defecto</button>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script src="inventari.js"></script>
+<script>
+function renderInventory(){
+  const inv = getInventory();
+  const ul = document.getElementById('lista-inv');
+  ul.innerHTML='';
+  inv.forEach(i=>{
+    const li = document.createElement('li');
+    li.innerHTML = `<strong>${i.nombre}</strong> — ${i.cantidadDisponible} (umbral: ${i.umbralMinimo})`;
+    ul.appendChild(li);
+  });
+
+  const toBuy = generarListaCompra();
+  const ul2 = document.getElementById('lista-reab');
+  ul2.innerHTML='';
+  if(toBuy.length===0) ul2.innerHTML='<li>Todo en niveles correctos</li>';
+  else toBuy.forEach(i=>{
+    const li=document.createElement('li'); li.textContent = `${i.nombre} — ${i.cantidadDisponible} (Reabastecer)`;
+    ul2.appendChild(li);
+  });
+}
+
+document.getElementById('btn-reset').addEventListener('click', ()=>{
+  if(confirm('Restablecer inventario por defecto?')){ localStorage.removeItem('inventory'); location.reload(); }
+});
+
+renderInventory();
+/* Re-render si hay cambios externos */
+window.addEventListener('storage', (e)=>{ if(e.key==='inventory' || e.key==='orders') renderInventory(); });
+</script>
+</body>
+</html>

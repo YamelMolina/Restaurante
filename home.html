@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sabor Apasionante - Inicio</title>
+  <style>
+    /* Estilo simple y unificado */
+    :root{
+      --accent:#ff6f61; --dark:rgba(0,0,0,0.6);
+      --card:#ffffff;
+    }
+    body{
+      margin:0;font-family:Poppins,system-ui,Arial;background:linear-gradient(180deg,#111, #222);
+      color:white;min-height:100vh;display:flex;flex-direction:column;
+    }
+    header{background:var(--dark);padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;}
+    header .logo{color:var(--accent);font-weight:800}
+    nav a{color:#fff;margin-left:1rem;text-decoration:none;font-weight:600}
+    main{flex:1;display:grid;place-items:center;padding:2rem}
+    .hero{background:rgba(255,255,255,0.03);padding:2rem;border-radius:12px;max-width:1100px;width:100%;display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap}
+    .col{flex:1;min-width:260px}
+    .btn{display:inline-block;padding:.7rem 1rem;border-radius:8px;background:var(--accent);color:white;border:none;cursor:pointer;font-weight:700}
+    footer{background:#000;padding:1rem;text-align:center;font-size:.9rem;color:rgba(255,255,255,.7)}
+    @media (max-width:700px){.hero{padding:1rem;flex-direction:column}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">Sabor Apasionante</div>
+    <nav>
+      <a href="menu.html">Menú</a>
+      <a href="inventario.html">Inventario</a>
+      <a href="ayuda.html">Ayuda</a>
+      <a href="contacto.html">Contacto</a>
+      <a href="admin.html">Perfil Admin</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="hero">
+      <div class="col">
+        <h1>Bienvenido a Sabor Apasionante</h1>
+        <p>Pide desde tu mesa escaneando el QR o navegando al menú. Administra pedidos desde el panel de administrador.</p>
+        <p><strong>QR mesas:</strong> genera QR en el panel admin para cada mesa.</p>
+        <div style="margin-top:1rem">
+          <a class="btn" href="menu.html">Ir al Menú</a>
+          <a class="btn" href="inventario.html" style="background:#444;margin-left:8px">Ver Inventario</a>
+        </div>
+      </div>
+      <div class="col" style="text-align:center">
+        <img src="c:\Users\USUARIO\Downloads\inventario de restaurante\7nvD.gif" alt="plato" style="max-width:320px;border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,.6)">
+      </div>
+    </div>
+  </main>
+
+  <footer>© Sabor Apasionante — Contacto: +57 304 345 6543</footer>
+</body>
+</html>

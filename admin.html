@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Panel Administrador - Sabor Apasionante</title>
+
+<style>
+body {
+  margin: 0;
+  background: #0d0d0d;
+  font-family: Poppins, Arial;
+  color: #fff;
+}
+
+/* Header */
+header {
+  background: #1a1a1a;
+  padding: 18px;
+  text-align: center;
+  color: #fede00;
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  box-shadow: 0 0 25px #000;
+}
+
+/* Login */
+#login-box {
+  max-width: 380px;
+  margin: 80px auto;
+  padding: 30px;
+  background: #111;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid #333;
+  box-shadow: 0 0 20px rgba(255,230,0,.1);
+}
+
+#login-box input {
+  width: 80%;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  margin-top: 12px;
+  background: #222;
+  color: #fff;
+}
+
+button {
+  padding: 10px 15px;
+  border-radius: 8px;
+  border: none;
+  background: #fede00;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 12px;
+}
+
+button:hover {
+  background: #fff000;
+}
+
+/* Panel */
+#panel {
+  display: none;
+  padding: 20px;
+}
+
+.order-card {
+  background: #141414;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  border: 1px solid #333;
+  box-shadow: 0 0 15px rgba(255,230,0,.06);
+}
+
+/* Estados */
+.estado-btn {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-top: 12px;
+  color: #000;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.pendiente { background: #fede00; }
+.preparando { background: #0099ff; color:white; }
+.listo { background: #00e676; }
+.entregado { background: #aa00ff; color:white;}
+
+.estado-btn:hover {
+  filter: brightness(1.15);
+}
+
+/* QR */
+.qr-box {
+  background: #111;
+  padding: 15px;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid #333;
+  box-shadow: 0 0 15px rgba(255,250,0,.1);
+  margin-top: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<header>🔧 Panel Administrador</header>
+
+<div id="login-box">
+  <h3>Acceso Administrativo</h3>
+  <p>Introduce la contraseña:</p>
+  <input type="password" id="admin-pass" placeholder="Contraseña">
+  <br>
+  <button id="btn-login">Ingresar</button>
+</div>
+
+<div id="panel">
+
+  <h2>📦 Pedidos</h2>
+  <div id="orders"></div>
+
+  <hr>
+
+  <h2>📲 Generar QR</h2>
+
+  <input id="mesa-num" type="number" placeholder="Mesa" 
+         style="padding:10px;border-radius:8px;border:none;background:#222;color:#fff">
+  <button id="btn-gen">Generar</button>
+
+  <div id="qr-box" class="qr-box" hidden>
+    <div id="qrcode"></div>
+    <p id="qr-url" style="color:#fede00"></p>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+
+<script>
+/* API de Render */
+const API = "https://restaurante-enpz.onrender.com/api/pedidos";
+
+/* Login */
+document.getElementById("btn-login").onclick = () => {
+  if (document.getElementById("admin-pass").value === "admin123") {
+    document.getElementById("login-box").style.display = "none";
+    document.getElementById("panel").style.display = "block";
+    cargarPedidos();
+    setInterval(cargarPedidos, 3000);
+  } else alert("Contraseña incorrecta");
+};
+
+/* Cargar pedidos */
+function cargarPedidos() {
+  fetch(API)
+    .then(r => r.json())
+    .then(data => {
+      const cont = document.getElementById("orders");
+      cont.innerHTML = "";
+
+      data.reverse().forEach(p => {
+        let productos = p.productos.map(x =>
+          `<div>- ${x.nombre} ($${x.precio.toLocaleString()})</div>`
+        ).join("");
+
+        const div = document.createElement("div");
+        div.className = "order-card";
+
+        div.innerHTML = `
+          <strong>${p.nombre}</strong> - Mesa ${p.mesa}<br>
+          <small>${new Date(p.createdAt).toLocaleString()}</small>
+          <hr>
+          ${productos}
+          <hr>
+          <b>Total:</b> $${p.total.toLocaleString()}
+          <br><br>
+
+          <span class="estado-btn pendiente" onclick="cambiarEstado('${p.id}','Pendiente')">Pendiente</span>
+          <span class="estado-btn preparando" onclick="cambiarEstado('${p.id}','Preparando')">Preparando</span>
+          <span class="estado-btn listo" onclick="cambiarEstado('${p.id}','Listo')">Listo</span>
+          <span class="estado-btn entregado" onclick="cambiarEstado('${p.id}','Entregado')">Entregado</span>
+        `;
+
+        cont.appendChild(div);
+      });
+    });
+}
+
+/* Cambiar estado */
+function cambiarEstado(id, estado) {
+  fetch(`${API}/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ estado })
+  });
+}
+
+/* Generar QR */
+document.getElementById("btn-gen").onclick = () => {
+  const mesa = document.getElementById("mesa-num").value;
+  if (!mesa) return alert("Ingresa un número de mesa");
+
+  const url = `https://restaurante-enpz.onrender.com/menu.html?mesa=${mesa}`;
+
+  document.getElementById("qr-box").hidden = false;
+  document.getElementById("qr-url").textContent = url;
+
+  document.getElementById("qrcode").innerHTML = "";
+
+  new QRCode(document.getElementById("qrcode"), {
+    text: url,
+    width: 200,
+    height: 200
+  });
+};
+</script>
+
+</body>
+</html>

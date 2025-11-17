@@ -1,0 +1,50 @@
+/* ---------- CARRITO ---------- */
+.cart-box {
+  background: #111;
+  padding: 20px;
+  border-top: 2px solid #ff6f61;
+  margin-top: 25px;
+  box-shadow: 0 -3px 12px rgba(0,0,0,0.4);
+}
+
+.cart-title {
+  color: #ff6f61;
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.cart-item {
+  background: #181818;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  border-left: 3px solid #ff6f61;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cart-item-name {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.cart-item-price {
+  font-size: .9rem;
+  opacity: .8;
+}
+
+.remove-btn {
+  background: #ff3b2f;
+  border: none;
+  padding: 6px 10px;
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: .8rem;
+}
+
+.remove-btn:hover {
+  background: #d6281f;
+}
