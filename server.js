@@ -4,37 +4,50 @@ const fs = require("fs");
 const path = require("path");
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
-// ⭐ Servir archivos estáticos (HTML, CSS, JS, imágenes)
+// ⭐ Servir archivos estáticos (HTML, imágenes, CSS, JS)
 app.use(express.static(path.join(__dirname)));
 
 // Archivo JSON donde se guardan los pedidos
 const FILE = path.join(__dirname, "pedidos.json");
 
-/* Leer archivo */
-function leerPedidos() {
-  if (!fs.existsSync(FILE)) return [];
-  return JSON.parse(fs.readFileSync(FILE));
+// Crear archivo si no existe
+if (!fs.existsSync(FILE)) {
+  fs.writeFileSync(FILE, "[]");
 }
 
-/* Guardar archivo */
+/* === Leer pedidos === */
+function leerPedidos() {
+  try {
+    return JSON.parse(fs.readFileSync(FILE));
+  } catch {
+    return [];
+  }
+}
+
+/* === Guardar pedidos === */
 function guardarPedidos(data) {
   fs.writeFileSync(FILE, JSON.stringify(data, null, 2));
 }
 
-/* Obtener todos los pedidos */
+/* === API: Obtener pedidos === */
 app.get("/api/pedidos", (req, res) => {
   res.json(leerPedidos());
 });
 
-/* Crear pedido */
+/* === API: Crear pedido === */
 app.post("/api/pedidos", (req, res) => {
   const pedidos = leerPedidos();
 
   const nuevo = {
-    ...req.body,
+    id: Date.now(),
+    nombre: req.body.nombre,
+    mesa: req.body.mesa,
+    productos: req.body.productos,
+    total: req.body.total,
     estado: "Pendiente",
     createdAt: new Date().toISOString(),
   };
@@ -45,7 +58,7 @@ app.post("/api/pedidos", (req, res) => {
   res.json({ mensaje: "Pedido registrado", pedido: nuevo });
 });
 
-/* Cambiar estado */
+/* === API: Cambiar estado === */
 app.put("/api/pedidos/:id", (req, res) => {
   const pedidos = leerPedidos();
   const id = req.params.id;
@@ -59,14 +72,14 @@ app.put("/api/pedidos/:id", (req, res) => {
   res.json({ mensaje: "Estado actualizado" });
 });
 
-/* ⭐ Ruta inicial: Mostrar home.html */
+/* === Página inicial === */
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "home.html"));
 });
 
-/* Render usa process.env.PORT */
-const PORT = process.env.PORT || 5500;
+/* === Puerto Render === */
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`🔥 Servidor activo en el puerto ${PORT}`);
+  console.log("🔥 Servidor activo en puerto:", PORT);
 });
