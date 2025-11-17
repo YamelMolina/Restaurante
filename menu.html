@@ -14,6 +14,7 @@ body {
   padding-bottom: 120px;
 }
 
+/* HEADER */
 header {
   background: #1a1a1a;
   padding: 18px;
@@ -25,6 +26,7 @@ header {
   box-shadow: 0 0 25px #000;
 }
 
+/* GRID */
 .grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -32,17 +34,18 @@ header {
   padding: 20px;
 }
 
+/* PRODUCTO */
 .item {
   background: #111;
   padding: 12px;
   border-radius: 12px;
   border: 1px solid #333;
-  transition: transform .2s, box-shadow .2s;
+  transition: transform .25s ease, box-shadow .25s ease;
 }
 
 .item:hover {
-  transform: scale(1.03);
-  box-shadow: 0 0 15px rgba(255,230,0,.2);
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(255,230,0,.3);
 }
 
 .item img {
@@ -52,6 +55,7 @@ header {
   object-fit: cover;
 }
 
+/* BOTÓN */
 button {
   width: 100%;
   margin-top: 10px;
@@ -65,7 +69,7 @@ button {
 
 button:hover { background: #fff000; }
 
-/* Carrito */
+/* CARRITO */
 #cart {
   position: fixed;
   bottom: 0;
@@ -79,13 +83,11 @@ button:hover { background: #fff000; }
   color: #fff;
 }
 
-/* Modal */
+/* MODAL */
 #modal {
   position: fixed;
-  top: 0; 
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
   background: rgba(0,0,0,.8);
   display: none;
   justify-content: center;
@@ -99,6 +101,37 @@ button:hover { background: #fff000; }
   border-radius: 12px;
   border: 1px solid #fede00;
 }
+
+/* TRACKER */
+#trackerBox {
+  margin-top: 20px;
+  padding: 15px;
+  background:#111;
+  border-radius:12px;
+  border:1px solid #333;
+}
+
+.progress {
+  width:100%;
+  height:15px;
+  background:#333;
+  border-radius:20px;
+  overflow:hidden;
+  margin-top:10px;
+}
+.progress-bar {
+  height:100%;
+  width:0%;
+  background:#fede00;
+  transition:width 1s;
+}
+
+.statusText {
+  text-align:center;
+  margin-top:10px;
+  font-size:14px;
+  color:#fede00;
+}
 </style>
 </head>
 
@@ -108,13 +141,13 @@ button:hover { background: #fff000; }
 
 <div class="grid" id="menu"></div>
 
-<!-- Carrito -->
+<!-- CARRITO -->
 <div id="cart">
   <span id="count">0 productos</span>
   <button onclick="abrirModal()">Ver Pedido</button>
 </div>
 
-<!-- Modal -->
+<!-- MODAL -->
 <div id="modal">
   <div class="modal-box">
     <h2>Confirmar Pedido</h2>
@@ -122,17 +155,23 @@ button:hover { background: #fff000; }
     <h3 id="total"></h3>
 
     <input id="nombre" placeholder="Tu nombre" style="width:100%;padding:8px;margin-top:12px;border-radius:8px;border:none;background:#222;color:#fff;">
-    
+
     <button onclick="enviarPedido()">Enviar Pedido</button>
     <button onclick="cerrarModal()" style="background:#ff4444;margin-top:10px;">Cancelar</button>
+
+    <!-- TRACKER -->
+    <div id="trackerBox" style="display:none;">
+      <h3>Estado del Pedido</h3>
+      <div class="progress"><div class="progress-bar" id="bar"></div></div>
+      <p class="statusText" id="statusText">Esperando actualización...</p>
+    </div>
   </div>
 </div>
 
 <script>
-/* URL DEL BACKEND EN RENDER */
-const API = "https://restaurante-enpz.onrender.com/api/pedidos";
+const API = "https://restaurante-enpz.onrender.com";
 
-/* IMÁGENES LOCALES (TAL COMO PEDISTE) */
+/* PRODUCTOS */
 const menu = [
   { nombre:'Hamburguesa Clásica', precio:15000, img:'hamburguesa.jpg' },
   { nombre:'Perro Caliente', precio:12000, img:'perro.jpg' },
@@ -149,6 +188,7 @@ const menu = [
 ];
 
 let carrito = [];
+let currentOrderID = null;
 
 const cont = document.getElementById("menu");
 
@@ -165,7 +205,8 @@ menu.forEach((p, i) => {
 
 function agregar(i) {
   carrito.push(menu[i]);
-  document.getElementById("count").textContent = carrito.length + " productos";
+  document.getElementById("count").textContent =
+    carrito.length + " productos";
 }
 
 function abrirModal() {
@@ -189,11 +230,11 @@ function cerrarModal() {
   document.getElementById("modal").style.display = "none";
 }
 
+/* ENVIAR PEDIDO */
 function enviarPedido() {
   const nombre = document.getElementById("nombre").value;
   const params = new URLSearchParams(window.location.search);
   const mesa = params.get("mesa") || "Sin mesa";
-
   if (!nombre) return alert("Escribe tu nombre");
 
   let total = carrito.reduce((a,b)=>a+b.precio,0);
@@ -206,19 +247,40 @@ function enviarPedido() {
     total
   };
 
-  fetch(API, {
+  fetch(`${API}/api/pedidos`, {
     method:"POST",
     headers:{ "Content-Type":"application/json" },
     body:JSON.stringify(pedido)
   })
   .then(r => r.json())
   .then(() => {
-    alert("Pedido enviado correctamente");
+    currentOrderID = pedido.id;
+    iniciarTracker();
     carrito = [];
-    cerrarModal();
     document.getElementById("count").textContent = "0 productos";
-  })
-  .catch(() => alert("Error enviando pedido"));
+  });
+}
+
+/* TRACKER EN TIEMPO REAL */
+function iniciarTracker(){
+  document.getElementById("trackerBox").style.display = "block";
+
+  setInterval(()=>{
+    fetch(`${API}/api/pedidos`)
+      .then(r=>r.json())
+      .then(lista=>{
+        const p = lista.find(x=>x.id == currentOrderID);
+        if(!p) return;
+
+        let bar = document.getElementById("bar");
+        let status = document.getElementById("statusText");
+
+        if(p.estado=="Pendiente"){ bar.style.width="25%"; status.textContent="Pedido recibido"; }
+        if(p.estado=="Preparando"){ bar.style.width="50%"; status.textContent="Estamos preparando tu pedido 👨‍🍳"; }
+        if(p.estado=="Listo"){ bar.style.width="75%"; status.textContent="Tu pedido está listo para entregar 🚀"; }
+        if(p.estado=="Entregado"){ bar.style.width="100%"; status.textContent="Pedido entregado ✔"; }
+      });
+  },3000);
 }
 </script>
 

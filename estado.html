@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estado de tu Pedido</title>
+
+<style>
+body {
+  margin: 0;
+  background: #0d0d0d;
+  font-family: Poppins, Arial;
+  color: #fff;
+  text-align: center;
+  padding: 30px;
+}
+
+h1 {
+  color: #fede00;
+  font-size: 2rem;
+}
+
+.card {
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 20px;
+  box-shadow: 0 0 15px rgba(255,230,0,.1);
+}
+
+.estado {
+  font-size: 1.8rem;
+  margin: 15px 0;
+  font-weight: bold;
+}
+
+.pendiente { color: #fede00; }
+.preparando { color: #0099ff; }
+.listo { color: #00e676; }
+.entregado { color: #aa00ff; }
+
+.loader {
+  margin: 20px auto;
+  width: 40px;
+  height: 40px;
+  border: 4px solid #333;
+  border-top: 4px solid #fede00;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+hr {
+  border: .5px solid #333;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Seguimiento de tu Pedido</h1>
+
+<div class="card">
+  <h2 id="nombre"></h2>
+  <p><b>ID del pedido:</b> <span id="id"></span></p>
+
+  <hr>
+
+  <div class="loader"></div>
+
+  <h3>Estado actual</h3>
+  <div id="estado" class="estado pendiente">Cargando...</div>
+
+  <hr>
+
+  <h3>Productos</h3>
+  <div id="productos"></div>
+
+  <hr>
+  <h3>Total: <span id="total"></span></h3>
+
+</div>
+
+<script>
+const API = "https://restaurante-enpz.onrender.com";
+
+// Obtener ID desde la URL
+const params = new URLSearchParams(window.location.search);
+const idPedido = params.get("id");
+
+document.getElementById("id").textContent = idPedido;
+
+function cargarEstado() {
+  fetch(`${API}/api/pedidos`)
+    .then(r => r.json())
+    .then(data => {
+      const pedido = data.find(p => p.id == idPedido);
+      if (!pedido) return;
+
+      // Mostrar datos
+      document.getElementById("nombre").textContent = pedido.nombre;
+      document.getElementById("total").textContent = "$" + pedido.total.toLocaleString();
+
+      // Productos
+      const prodHTML = pedido.productos
+        .map(p => `<div>- ${p.nombre} ($${p.precio.toLocaleString()})</div>`)
+        .join("");
+      document.getElementById("productos").innerHTML = prodHTML;
+
+      // Estado dinámico
+      const estEl = document.getElementById("estado");
+      estEl.textContent = pedido.estado;
+
+      estEl.className = "estado " + pedido.estado.toLowerCase();
+    });
+}
+
+// Actualiza cada 3 segundos
+setInterval(cargarEstado, 3000);
+cargarEstado();
+</script>
+
+</body>
+</html>
