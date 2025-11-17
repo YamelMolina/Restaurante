@@ -3,55 +3,67 @@
 <head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Inventario - Sabor Apasionante</title>
-<style>
-  body{font-family:Poppins,Arial;background:linear-gradient(#111,#222);color:#fff;margin:0}
-  header{background:rgba(0,0,0,.6);padding:1rem}
-  .wrap{max-width:1000px;margin:1rem auto;padding:1rem}
-  .grid{display:grid;grid-template-columns:1fr 320px;gap:1rem}
-  .card{background:#fff;color:#000;padding:1rem;border-radius:8px}
-  ul{list-style:none;padding:0}
-  li{padding:.5rem;border-bottom:1px solid #eee}
-  button{background:#ff6f61;border:none;padding:.5rem;border-radius:6px;color:#fff;cursor:pointer}
-</style>
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<header><div style="font-weight:800;color:#ff6f61">Inventario</div></header>
-<div class="wrap">
-  <div class="grid">
+<header><div style="font-weight:800;color:var(--accent);padding:12px 16px">Inventario</div></header>
+
+<div class="container">
+  <div class="grid" style="grid-template-columns:1fr 320px;gap:16px;">
     <div class="card">
-      <h3>Existencias</h3>
-      <ul id="lista-inv"></ul>
+      <h3 class="h-strong">Existencias</h3>
+      <ul id="lista-inv" class="inv-list"></ul>
     </div>
+
     <aside class="card">
-      <h4>Ingredientes para reabastecer</h4>
+      <h4 class="h-strong">Ingredientes para reabastecer</h4>
       <ul id="lista-reab"></ul>
-      <h4 style="margin-top:.8rem">Acciones</h4>
-      <div>
-        <button id="btn-reset">Restablecer inventario por defecto</button>
+
+      <h4 style="margin-top:.8rem" class="h-strong">Acciones</h4>
+      <div style="display:flex;gap:8px;flex-direction:column">
+        <button id="btn-reset" class="btn alt">Restablecer inventario por defecto</button>
+        <div style="margin-top:8px">
+          <input id="ing-nombre" placeholder="Nuevo ingrediente" style="width:100%;padding:8px;border-radius:6px;border:none;background:#222;color:#fff">
+          <input id="ing-cant" placeholder="Cantidad" type="number" style="width:100%;padding:8px;border-radius:6px;border:none;background:#222;color:#fff;margin-top:8px">
+          <button id="btn-add" class="btn" style="margin-top:8px">Agregar ingrediente</button>
+        </div>
       </div>
     </aside>
   </div>
 </div>
 
-<script src="inventari.js"></script>
+<script src="inventario.js" defer></script>
+
 <script>
+/* Render simple (usa getInventory() y generarListaCompra() de inventario.js) */
 function renderInventory(){
   const inv = getInventory();
   const ul = document.getElementById('lista-inv');
-  ul.innerHTML='';
+  ul.innerHTML = '';
   inv.forEach(i=>{
     const li = document.createElement('li');
-    li.innerHTML = `<strong>${i.nombre}</strong> — ${i.cantidadDisponible} (umbral: ${i.umbralMinimo})`;
+    const levelPct = Math.min(100, Math.round((i.cantidadDisponible / Math.max(i.umbralMinimo, i.cantidadDisponible)) * 100));
+    li.innerHTML = `
+      <div style="flex:1">
+        <strong>${i.nombre}</strong>
+        <div class="small">${i.cantidadDisponible} disponible — umbral: ${i.umbralMinimo}</div>
+      </div>
+      <div class="level">
+        <div style="width:120px;display:inline-block">
+          <div class="progress" style="height:10px"><div class="progress-bar" style="width:${Math.min(100, Math.round(i.cantidadDisponible / Math.max(1,i.umbralMinimo) * 100))}%"></div></div>
+        </div>
+      </div>
+    `;
+    if(i.cantidadDisponible <= i.umbralMinimo) li.style.borderLeft = '4px solid var(--danger)';
     ul.appendChild(li);
   });
 
   const toBuy = generarListaCompra();
   const ul2 = document.getElementById('lista-reab');
-  ul2.innerHTML='';
-  if(toBuy.length===0) ul2.innerHTML='<li>Todo en niveles correctos</li>';
+  ul2.innerHTML = '';
+  if(toBuy.length===0) ul2.innerHTML = '<li>Todo en niveles correctos</li>';
   else toBuy.forEach(i=>{
-    const li=document.createElement('li'); li.textContent = `${i.nombre} — ${i.cantidadDisponible} (Reabastecer)`;
-    ul2.appendChild(li);
+    const li = document.createElement('li'); li.textContent = `${i.nombre} — ${i.cantidadDisponible} (Reabastecer)`; ul2.appendChild(li);
   });
 }
 
@@ -59,9 +71,20 @@ document.getElementById('btn-reset').addEventListener('click', ()=>{
   if(confirm('Restablecer inventario por defecto?')){ localStorage.removeItem('inventory'); location.reload(); }
 });
 
+document.getElementById('btn-add').addEventListener('click', ()=>{
+  const nombre = document.getElementById('ing-nombre').value.trim();
+  const cant = Number(document.getElementById('ing-cant').value) || 0;
+  if(!nombre) return alert('Nombre requerido');
+  const inv = getInventory();
+  inv.push({ nombre, cantidadDisponible: cant, umbralMinimo: Math.max(1, Math.round(cant*0.2)) });
+  setInventory(inv);
+  renderInventory();
+  document.getElementById('ing-nombre').value=''; document.getElementById('ing-cant').value='';
+});
+
 renderInventory();
-/* Re-render si hay cambios externos */
-window.addEventListener('storage', (e)=>{ if(e.key==='inventory' || e.key==='orders') renderInventory(); });
+window.addEventListener('inventory-updated', ()=>{ renderInventory(); });
+window.addEventListener('storage', (e)=>{ if(e.key === 'inventory' || e.key === 'events_update') renderInventory(); });
 </script>
 </body>
 </html>
